@@ -7,7 +7,8 @@
  "three/addons/":"https://raw.githack.com/mrdoob/three.js/dev/examples/jsm/"}}</script>
 <body><div id="info">loading…</div><script type="module">
 // Repro: WebGLRenderer + WebGLNodesHandler (NodeMaterial compatibility layer, r184+). In WebXR, NodeMaterials are rendered
-// from the head camera for BOTH eyes (zero disparity) while classic materials get per-eye cameras.
+// from the same camera for BOTH eyes (zero disparity) while classic materials get per-eye cameras
+// (r186: the union camera; r187+: the user camera, which follows the first sub camera = left eye).
 // Cause: WebGLRenderer.render() calls nodesHandler.renderStart(scene, camera) before swapping camera for xr.getCamera(),
 // and WebGLNodesHandler.onBeforeRenderCallback ignores the per-eye camera passed to it.
 // ?patch=1 applies a one-function workaround (re-point nodeFrame.camera in onBeforeRender).

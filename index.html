@@ -1,13 +1,14 @@
 <!doctype html><meta charset="utf-8"><title>WebGLRenderer + WebGLNodesHandler: NodeMaterials have zero stereo disparity in WebXR</title>
 <style>body{margin:0;background:#000;color:#ddd;font:14px/1.4 monospace}#info{position:fixed;left:8px;top:8px;white-space:pre;background:rgba(0,0,0,.6);padding:6px 8px}</style>
 <script type="importmap">{"imports":{
- "three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
- "three/webgpu":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.webgpu.js",
- "three/tsl":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.tsl.js",
- "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"}}</script>
+ "three":"https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js",
+ "three/webgpu":"https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.webgpu.js",
+ "three/tsl":"https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.tsl.js",
+ "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.187.0/examples/jsm/"}}</script>
 <body><div id="info">loading…</div><script type="module">
 // Repro: WebGLRenderer + WebGLNodesHandler (NodeMaterial compatibility layer, r184+). In WebXR, NodeMaterials are rendered
-// from the head camera for BOTH eyes (zero disparity) while classic materials get per-eye cameras.
+// from the same camera for BOTH eyes (zero disparity) while classic materials get per-eye cameras
+// (r186: the union camera; r187+: the user camera, which follows the first sub camera = left eye).
 // Cause: WebGLRenderer.render() calls nodesHandler.renderStart(scene, camera) before swapping camera for xr.getCamera(),
 // and WebGLNodesHandler.onBeforeRenderCallback ignores the per-eye camera passed to it.
 // ?patch=1 applies a one-function workaround (re-point nodeFrame.camera in onBeforeRender).
@@ -38,7 +39,7 @@ const node = new THREE.Mesh(geo, nodeMat); node.position.set(0.6, 1.6, -2); scen
 document.body.appendChild(VRButton.createButton(renderer));
 renderer.setAnimationLoop(() => renderer.render(scene, camera));
 document.getElementById('info').textContent = [
-  'three@0.186.0 (jsdelivr)  r' + THREE.REVISION,
+  'three@0.187.0 (jsdelivr)  r' + THREE.REVISION,
   'red = MeshBasicMaterial (classic), blue = MeshBasicNodeMaterial via WebGLNodesHandler',
   'expected: both spheres at the same depth in VR. bug: blue has no stereo disparity (flat / at infinity).',
   'patch=' + patch + '  (add ?patch=1 for the workaround)',
